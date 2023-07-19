@@ -56,19 +56,81 @@ app.post('/login',(req,res)=>{
 
 /////////////////////SIGNUP////////////////////////
 
-app.get('/signup',(req,res)=>{
-    res.render('signup')
-})
-app.post('/signup', (req,res)=>{
-    mongo.insertUser(req.body)
-    .then((resp)=>{
-        log = "please login to continue"
-        res.redirect('/login')
-    })
-    // .catch((err)=>console.log(err))
+let signuperr;
+let pass;
+app.get('/signup', (req, res) => {
+  res.render('signup', { err: signuperr, pass });
+  pass = false;
+  signuperr = '';
+});
+
+let passwordValidate = (password) => {
+  if (password.length < 8)
+    return false;
+  else {
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/;
+    return regex.test(password);
+  }
+};
+
+app.post('/signup', (req, res) => {
+  let password = req.body.password;
+
+  if (req.body.email === '') {
+    signuperr = 'Please enter an email';
+    res.redirect('/signup');
+  } else if (req.body.password !== '') {
+    let resp = passwordValidate(req.body.password);
+    if (resp) {
+      if (req.body.name === '') {
+        signuperr = 'Please enter a name';
+        res.redirect('/signup');
+      } else {
+        mongo.checkEmail(req.body.email)
+          .then((result) => {
+            if (result) {
+              signuperr = 'Login failed, email already exists';
+              res.redirect('/signup');
+            } else {
+              mongo.insertUser(req.body)
+                .then((resp) => {
+                  log = 'Please login to continue';
+                  res.redirect('/login');
+                });
+            }
+          });
+      }
+    } else {
+      pass = true;
+      res.redirect('/signup');
+    }
+  } else {
+    signuperr = 'Please enter a password';
+    res.redirect('/signup');
+  }
+});
+
+log = "";
+
+
+
+
+
+
+
+// app.get('/signup',(req,res)=>{
+//     res.render('signup')
+// })
+// app.post('/signup', (req,res)=>{
+//     mongo.insertUser(req.body)
+//     .then((resp)=>{
+//         log = "please login to continue"
+//         res.redirect('/login')
+//     })
+//     // .catch((err)=>console.log(err))
     
-})
-log = ""
+// })
+// log = ""
 
 //////////////////HOME PAGE//////////////////////
 
@@ -78,18 +140,19 @@ app.get('/home',(req,res)=>{
     {
         let data = {
             id:req.session.loginDetails._id,
-            date:''
+            date:'',
         }
+        let name = req.session.loginDetails.name.toUpperCase
         mongo.viewTodo(data.id)
         .then((data)=>{
             let editstatus = req.session.editStatus
             if(data.length==0)
             {
-                res.render('todohome',{todo:data,editstatus})
+                res.render('todohome',{todo:data,editstatus,name})
                 req.session.editStatus=false
             }else{
                 let date = data[0].date
-                res.render('todohome',{todo:data,date:date,editstatus})
+                res.render('todohome',{todo:data,date:date,editstatus,name})
                 req.session.editStatus=false
             }
         })
@@ -210,39 +273,3 @@ app.post('/logout',(req,res)=>{
 app.listen(8080, () => {
   console.log('Server is running on port 8080');
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// let pas = '123456789';
-// let gol = '123456789';
-
-// async function has() {
-//   const salt = await bcrypt.genSalt(10);
-//   const hashedPassword = await bcrypt.hash(pas, salt);
-//   return hashedPassword;
-// }
-
-// has()
-//   .then((hashedPassword) => bcrypt.compare(gol, hashedPassword))
-//   .then((isMatch) => {
-//     console.log(isMatch);
-//   })
-//   .catch((error) => {
-//     console.error(error);
-//   });

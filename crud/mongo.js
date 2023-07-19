@@ -22,6 +22,12 @@ module.exports={
             resolve(res)
         })
 },
+checkEmail:(email)=>{
+         return new Promise( async (resolve,reject)=>{
+        let user =await db.get().collection('user').findOne({email})
+        resolve(user)
+         })
+},
     doLogin:(log)=>{
         return new Promise( async (resolve,reject)=>{
             let response={}

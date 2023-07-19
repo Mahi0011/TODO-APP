@@ -36,11 +36,12 @@
               <label class="form-label" for="typePasswordX-2">Password</label>
             </div>
 
-            <!-- Checkbox -->
-            <div class="form-check d-flex justify-content-start mb-4">
-              <input class="form-check-input" type="checkbox" value="" id="form1Example3" />
-              <label class="form-check-label" for="form1Example3"> Remember password </label>
-            </div>
+            {{#if err}}
+            <p style="color: red;" class="error">{{err}}</p>
+            {{/if}}
+               {{#if pass}}
+            <p style="color: red;" class="error">Password should be 8 characters long and contain at least one uppercase letter, one lowercase letter, and one numeric digit</p>
+            {{/if}}
 
             <button class="btn btn-primary btn-lg btn-block" type="submit">Sign up</button>
             <p class="pt-3"><a class=" link-offset-2 link-underline link-underline-opacity-10" href="login">Already have an account ..?</a></p>
